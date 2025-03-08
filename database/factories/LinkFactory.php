@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +18,11 @@ class LinkFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'url' => fake()->url(),
+            'title' => fake()->sentence(3),
+            'description' => fake()->paragraph(),
+            'position' => fake()->numberBetween(1, 100),
+            'user_id' => User::factory(),
         ];
     }
 }
