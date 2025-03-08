@@ -1,13 +1,13 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Links;
 
 use App\Models\Link;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class LinkTest extends TestCase
+class LinkCrudTest extends TestCase
 {
     use RefreshDatabase;
 
