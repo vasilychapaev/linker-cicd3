@@ -1,0 +1,59 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    # Кэшируем composer dependencies для ускорения сборки
+    - name: Cache Composer dependencies
+      uses: actions/cache@v3
+      with:
+        path: vendor
+        key: composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: composer-
+    
+    # PHP 8.2 - современная версия для Laravel
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, dom, fileinfo, mysql, sqlite3
+        coverage: xdebug
+    
+    # Устанавливаем зависимости
+    - name: Install Dependencies
+      run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+    
+    # Генерируем ключ приложения
+    - name: Generate key
+      run: php artisan key:generate
+    
+    # Создаем .env для тестов
+    - name: Create Database
+      run: |
+        cp .env.example .env
+        touch database/database.sqlite
+        
+    # Конфигурируем окружение для SQLite
+    - name: Configure Environment
+      run: |
+        echo "DB_CONNECTION=sqlite" >> .env
+        echo "DB_DATABASE=${{ github.workspace }}/database/database.sqlite" >> .env
+    
+    # Запускаем миграции
+    - name: Run Migrations
+      run: php artisan migrate --force
+    
+    # Запускаем тесты с покрытием кода
+    - name: Execute tests via PHPUnit
+      run: vendor/bin/phpunit --coverage-text
